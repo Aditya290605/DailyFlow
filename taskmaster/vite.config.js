@@ -12,6 +12,16 @@ export default defineConfig({
     chunkSizeWarningLimit: 2000,
   },
   plugins: [tsconfigPaths(), react(), tagger()],
+  resolve: {
+    alias: {
+      src: "/src",
+      components: "/src/components",
+      pages: "/src/pages",
+      utils: "/src/utils",
+      assets: "/src/assets",
+      styles: "/src/styles",
+    },
+  },
   server: {
     port: "4028",
     host: "0.0.0.0",

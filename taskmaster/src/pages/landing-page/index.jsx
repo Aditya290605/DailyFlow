@@ -2,7 +2,7 @@ import React from 'react';
 import HeroSection from './components/HeroSection';
 import BenefitsSection from './components/BenefitsSection';
 import TestimonialsSection from './components/TestimonialsSection';
-import FeaturesShowcase from './components/FeaturesShowcase';
+import FeatureShowcase from './components/FeatureShowcase';
 import SocialProofSection from './components/SocialProofSection';
 import CTASection from './components/CTASection';
 import Footer from './components/Footer';
@@ -12,7 +12,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background">
       <HeroSection />
       <BenefitsSection />
-      <FeaturesShowcase />
+      <FeatureShowcase />
       <TestimonialsSection />
       <SocialProofSection />
       <CTASection />

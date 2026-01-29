@@ -26,7 +26,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete }) => {
         <div className="pt-1">
           <Checkbox
             checked={task?.completed}
-            onChange={() => onToggle(task?.id)}
+            onChange={() => onToggle(task?._id || task?.id)}
             size="lg"
           />
         </div>
@@ -45,7 +45,12 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={handleSave}
+                  onClick={() => {
+                    if (editedText?.trim()) {
+                      onEdit(task?._id || task?.id, editedText?.trim());
+                      setIsEditing(false);
+                    }
+                  }}
                   iconName="Check"
                   iconPosition="left"
                 >
@@ -79,7 +84,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete }) => {
               <Icon name="Pencil" size={18} className="text-muted-foreground" />
             </button>
             <button
-              onClick={() => onDelete(task?.id)}
+              onClick={() => onDelete(task?._id || task?.id)}
               className="p-2 rounded-lg hover:bg-destructive/10 transition-smooth"
               aria-label="Delete task"
             >

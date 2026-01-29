@@ -54,7 +54,7 @@ const RegistrationForm = () => {
   const handleInputChange = (e) => {
     const { name, value } = e?.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     if (errors?.[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -107,10 +107,18 @@ const RegistrationForm = () => {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { signup } = await import('../../../services/api');
+
+      await signup(formData.fullName, formData.email, formData.password);
       navigate('/dashboard');
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setErrors({
+        form: err.response?.data?.msg || 'Registration failed. Please try again.'
+      });
+      setIsLoading(false);
+    }
   };
 
   const passwordValidation = validatePassword(formData?.password);

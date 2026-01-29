@@ -75,19 +75,20 @@ const LoginForm = () => {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (
-        formData?.email === mockCredentials?.email &&
-        formData?.password === mockCredentials?.password
-      ) {
-        navigate('/dashboard');
-      } else {
-        setErrors({
-          form: `Invalid credentials. Please use:\nEmail: ${mockCredentials?.email}\nPassword: ${mockCredentials?.password}`
-        });
-        setIsLoading(false);
-      }
-    }, 1500);
+    try {
+      // Import dynamically to avoid circular dependencies if any, 
+      // or just standard import at top. Used dynamic here for quick integration.
+      const { login } = await import('../../../services/api');
+
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setErrors({
+        form: err.response?.data?.msg || 'Login failed. Please check your credentials.'
+      });
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {

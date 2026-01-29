@@ -1,17 +1,20 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const WeekdayPerformance = ({ data }) => {
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload?.length) {
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
       return (
-        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium text-foreground mb-1">{payload?.[0]?.payload?.day}</p>
-          <p className="text-xs text-muted-foreground">
-            Average: <span className="text-primary font-semibold">{payload?.[0]?.value}%</span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Days: <span className="text-foreground font-medium">{payload?.[0]?.payload?.count}</span>
+        <div className="bg-popover/90 backdrop-blur-sm border border-border rounded-lg p-3 shadow-xl">
+          <p className="text-sm font-medium text-foreground mb-1">{label}</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent" />
+            <p className="text-xs text-muted-foreground">
+              Avg. Completion: <span className="text-accent font-semibold">{payload[0].value}%</span>
+            </p>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Based on {payload[0].payload.count} days
           </p>
         </div>
       );
@@ -19,55 +22,58 @@ const WeekdayPerformance = ({ data }) => {
     return null;
   };
 
-  const getBarColor = (value) => {
-    if (value >= 80) return 'var(--color-success)';
-    if (value >= 60) return 'var(--color-primary)';
-    if (value >= 40) return 'var(--color-accent)';
-    return 'var(--color-warning)';
-  };
-
   return (
-    <div className="bg-card border border-border rounded-lg p-4 md:p-6">
-      <div className="mb-4 md:mb-6">
-        <h3 className="text-lg md:text-xl font-semibold text-foreground">Best Performing Days</h3>
+    <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-sm">
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold text-foreground tracking-tight">Best Performing Days</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Average completion rate by day of week
+          Average completion rate across weekdays
         </p>
       </div>
-      <div className="w-full h-64 md:h-72" aria-label="Bar chart showing weekday performance">
+      <div className="w-full h-72" aria-label="Area chart showing weekday performance">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              dataKey="day" 
-              stroke="var(--color-muted-foreground)"
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorWeekday" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" opacity={0.5} />
+            <XAxis
+              dataKey="day"
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: 'var(--color-muted-foreground)', fontSize: 12 }}
+              dy={10}
             />
-            <YAxis 
-              stroke="var(--color-muted-foreground)"
+            <YAxis
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: 'var(--color-muted-foreground)', fontSize: 12 }}
               domain={[0, 100]}
+              tickFormatter={(value) => `${value}%`}
             />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey="average" 
-              radius={[8, 8, 0, 0]}
-              maxBarSize={60}
-            >
-              {data?.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getBarColor(entry?.average)} />
-              ))}
-            </Bar>
-          </BarChart>
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--color-accent)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+            <Area
+              type="monotone"
+              dataKey="average"
+              stroke="var(--color-accent)"
+              strokeWidth={3}
+              fillOpacity={1}
+              fill="url(#colorWeekday)"
+              activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-accent)" }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        {data?.slice(0, 4)?.map((day, index) => (
-          <div key={index} className="p-3 bg-muted rounded-lg">
-            <p className="text-xs text-muted-foreground mb-1">{day?.day}</p>
-            <p className="text-lg md:text-xl font-semibold text-foreground data-text">
+      <div className="mt-6 grid grid-cols-7 gap-2 text-center">
+        {data?.map((day, index) => (
+          <div key={index} className="flex flex-col items-center">
+            <div className="text-[10px] text-muted-foreground mb-1">{day?.day?.charAt(0)}</div>
+            <div className={`text-xs font-semibold ${day?.average > 0 ? 'text-accent' : 'text-muted'}`}>
               {day?.average}%
-            </p>
+            </div>
           </div>
         ))}
       </div>

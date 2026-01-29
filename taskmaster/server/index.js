@@ -1,4 +1,7 @@
-require('dotenv').config();
+const path = require('path');
+// Try loading from current dir or parent dir to support running from 'server/' or root
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+if (!process.env.MONGODB_URI) require('dotenv').config(); // Fallback to default logic if file not found above
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -6,40 +9,36 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-// MongoDB Connection
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const MONGODB_URI = process.env.MONGODB_URI;
+
+mongoose.connection.on('connected', () => console.log('Mongoose connected'));
+mongoose.connection.on('error', (err) => console.log('Mongoose error', err));
+mongoose.connection.on('disconnected', () => console.log('Mongoose disconnected'));
+
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/data', require('./routes/data.routes'));
+
+app.get('/', (req, res) => {
+    res.send('DailyFlow API is running');
+});
 
 const startServer = async () => {
-    const localUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/dailyflow';
-
     try {
-        await mongoose.connect(localUri, { serverSelectionTimeoutMS: 2000 });
-        console.log('✅ Connected to Local MongoDB');
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+        console.log('✅ Connected to MongoDB Atlas');
+        console.log('ReadyState:', mongoose.connection.readyState);
+
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+        });
     } catch (err) {
-        console.log('⚠️ Local MongoDB not found, starting in-memory instance...');
-        try {
-            // Ensure any previous connection attempt is cleaned up
-            await mongoose.disconnect();
-
-            const mongod = await MongoMemoryServer.create();
-            const uri = mongod.getUri();
-            console.log('Using In-Memory URI:', uri);
-            await mongoose.connect(uri);
-            console.log('✅ Connected to In-Memory MongoDB');
-        } catch (memErr) {
-            console.error('❌ Failed to start in-memory MongoDB:', memErr);
-            process.exit(1);
-        }
+        console.error('❌ Failed to connect to MongoDB:', err);
+        process.exit(1);
     }
-
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-    });
 };
 
 startServer();

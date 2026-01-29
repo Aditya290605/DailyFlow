@@ -18,6 +18,11 @@ const Header = () => {
       label: 'Analytics',
       path: '/progress-analytics',
       icon: 'TrendingUp'
+    },
+    {
+      label: 'Profile',
+      path: '/profile',
+      icon: 'User'
     }
   ];
 
@@ -62,9 +67,7 @@ const Header = () => {
     <header className="header-nav">
       <div className="header-nav-container">
         <div className="header-nav-logo">
-          <div className="header-nav-logo-icon">
-            <Icon name="CheckCircle2" size={24} color="var(--color-primary)" />
-          </div>
+          <img src="/assets/logo.png" alt="DailyFlow Logo" className="h-8 w-8 object-contain mr-2" />
           <span className="header-nav-logo-text">DailyFlow</span>
         </div>
 
@@ -76,9 +79,9 @@ const Header = () => {
               className={`header-nav-item ${isActive(item?.path) ? 'active' : ''}`}
               aria-current={isActive(item?.path) ? 'page' : undefined}
             >
-              <Icon 
-                name={item?.icon} 
-                size={20} 
+              <Icon
+                name={item?.icon}
+                size={20}
                 className="mr-2"
               />
               {item?.label}
@@ -97,9 +100,9 @@ const Header = () => {
               <div className="user-menu-avatar">
                 <span>U</span>
               </div>
-              <Icon 
-                name={isUserMenuOpen ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
+              <Icon
+                name={isUserMenuOpen ? "ChevronUp" : "ChevronDown"}
+                size={16}
                 className="text-muted-foreground"
               />
             </button>

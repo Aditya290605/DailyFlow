@@ -12,118 +12,120 @@ import WeekdayPerformance from './components/WeekdayPerformance';
 const ProgressAnalytics = () => {
   const [activeView, setActiveView] = useState('month');
   const [activeChart, setActiveChart] = useState('bar');
+  const [stats, setStats] = useState([]);
+  const [metrics, setMetrics] = useState({ currentStreak: 0, longestStreak: 0, totalCompletedDays: 0, averageCompletion: 0 });
 
-  const weekData = [
-    { date: "Mon", completion: 85, tasksCompleted: 6, totalTasks: 7 },
-    { date: "Tue", completion: 100, tasksCompleted: 8, totalTasks: 8 },
-    { date: "Wed", completion: 75, tasksCompleted: 6, totalTasks: 8 },
-    { date: "Thu", completion: 90, tasksCompleted: 9, totalTasks: 10 },
-    { date: "Fri", completion: 80, tasksCompleted: 4, totalTasks: 5 },
-    { date: "Sat", completion: 100, tasksCompleted: 5, totalTasks: 5 },
-    { date: "Sun", completion: 70, tasksCompleted: 7, totalTasks: 10 }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const api = await import('../../services/api');
+        const { stats, metrics } = await api.getAnalytics();
+        setStats(stats);
 
-  const monthData = [
-    { date: "Jan 1", completion: 85, tasksCompleted: 6, totalTasks: 7 },
-    { date: "Jan 5", completion: 90, tasksCompleted: 9, totalTasks: 10 },
-    { date: "Jan 10", completion: 75, tasksCompleted: 6, totalTasks: 8 },
-    { date: "Jan 15", completion: 100, tasksCompleted: 8, totalTasks: 8 },
-    { date: "Jan 20", completion: 80, tasksCompleted: 4, totalTasks: 5 },
-    { date: "Jan 25", completion: 95, tasksCompleted: 19, totalTasks: 20 },
-    { date: "Jan 29", completion: 88, tasksCompleted: 7, totalTasks: 8 }
-  ];
+        // Calculate average completion
+        let totalAvg = 0;
+        if (stats.length > 0) {
+          totalAvg = Math.round(stats.reduce((acc, curr) => acc + curr.percentage, 0) / stats.length);
+        }
+        setMetrics({ ...metrics, averageCompletion: totalAvg });
 
-  const quarterData = [
-    { date: "Week 1", completion: 82, tasksCompleted: 41, totalTasks: 50 },
-    { date: "Week 4", completion: 88, tasksCompleted: 44, totalTasks: 50 },
-    { date: "Week 8", completion: 75, tasksCompleted: 38, totalTasks: 50 },
-    { date: "Week 12", completion: 90, tasksCompleted: 45, totalTasks: 50 }
-  ];
+      } catch (err) {
+        console.error("Failed to load analytics", err);
+      }
+    };
+    loadData();
+  }, []);
 
-  const yearData = [
-    { date: "Jan", completion: 85, tasksCompleted: 170, totalTasks: 200 },
-    { date: "Feb", completion: 88, tasksCompleted: 176, totalTasks: 200 },
-    { date: "Mar", completion: 82, tasksCompleted: 164, totalTasks: 200 },
-    { date: "Apr", completion: 90, tasksCompleted: 180, totalTasks: 200 },
-    { date: "May", completion: 87, tasksCompleted: 174, totalTasks: 200 },
-    { date: "Jun", completion: 92, tasksCompleted: 184, totalTasks: 200 },
-    { date: "Jul", completion: 85, tasksCompleted: 170, totalTasks: 200 },
-    { date: "Aug", completion: 89, tasksCompleted: 178, totalTasks: 200 },
-    { date: "Sep", completion: 91, tasksCompleted: 182, totalTasks: 200 },
-    { date: "Oct", completion: 86, tasksCompleted: 172, totalTasks: 200 },
-    { date: "Nov", completion: 88, tasksCompleted: 176, totalTasks: 200 },
-    { date: "Dec", completion: 90, tasksCompleted: 180, totalTasks: 200 }
-  ];
+  // Process Stats for different views
+  const getProcessedData = (view) => {
+    if (!stats || !Array.isArray(stats) || !stats.length) return [];
 
-  const chartDataMap = {
-    week: weekData,
-    month: monthData,
-    quarter: quarterData,
-    year: yearData
+    // Naively mapping last 7 days for 'week' view as an example
+    // Full implementation would handle day aggregations properly
+    if (view === 'week') {
+      return stats.slice(-7).map(s => {
+        const d = new Date(s.date);
+        return {
+          date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          completion: s.percentage,
+          tasksCompleted: s.tasksCompleted,
+          totalTasks: s.totalTasks
+        };
+      });
+    }
+
+    // Mapping for Month
+    if (view === 'month') {
+      return stats.slice(-30).map(s => {
+        const d = new Date(s.date);
+        return {
+          date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          completion: s.percentage,
+          tasksCompleted: s.tasksCompleted,
+          totalTasks: s.totalTasks
+        };
+      });
+    }
+
+    return stats; // default fallback
   };
 
-  const calendarData = Array.from({ length: 365 }, (_, i) => {
-    const completionRate = Math.floor(Math.random() * 101);
-    const totalTasks = Math.floor(Math.random() * 10) + 5;
-    const tasksCompleted = Math.floor((completionRate / 100) * totalTasks);
-    const date = new Date(2026, 0, 1);
-    date?.setDate(date?.getDate() + i);
-    
-    return {
-      date: date?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      completion: completionRate,
-      tasksCompleted,
-      totalTasks
-    };
-  });
+  const chartData = getProcessedData(activeView);
 
-  const weekdayData = [
-    { day: "Mon", average: 85, count: 52 },
-    { day: "Tue", average: 88, count: 52 },
-    { day: "Wed", average: 82, count: 52 },
-    { day: "Thu", average: 90, count: 52 },
-    { day: "Fri", average: 87, count: 52 },
-    { day: "Sat", average: 92, count: 52 },
-    { day: "Sun", average: 78, count: 52 }
-  ];
+  // Weekday Performance Calculation
+  const getWeekdayData = () => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const dayTotals = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 
+    if (stats && Array.isArray(stats)) {
+      stats.forEach(s => {
+        const d = new Date(s.date);
+        // day is actually 0-6 in stats usually if generated, but date string parsing needs care
+        // Assuming UTC date string YYYY-MM-DD
+        dayTotals[d.getDay()].push(s.percentage);
+      });
+    }
+
+    return days.map((day, index) => {
+      const scores = dayTotals[index];
+      const average = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      return { day, average, count: scores.length };
+    });
+  };
+
+  const weekdayData = getWeekdayData();
+
+  // Simple Insights Logic
   const insights = [
     {
       type: "achievement",
       title: "Consistency Champion",
-      description: "You\'ve maintained a 15-day streak! Your dedication is paying off with an average completion rate of 87%.",
-      metric: { label: "Current Streak", value: "15 days" }
-    },
-    {
-      type: "pattern",
-      title: "Peak Performance Days",
-      description: "Your productivity peaks on Thursdays and Saturdays with completion rates above 90%. Consider scheduling important tasks on these days.",
-      metric: { label: "Best Day", value: "Saturday 92%" }
+      description: `You've maintained a ${metrics?.currentStreak || 0}-day streak! Keep going!`,
+      metric: { label: "Current Streak", value: `${metrics?.currentStreak || 0} days` }
     },
     {
       type: "milestone",
-      title: "Milestone Achieved",
-      description: "You\'ve completed 250 days this year! You\'re on track to reach your annual goal of 300 completed days.",
-      metric: { label: "Progress", value: "83%" }
-    },
-    {
-      type: "suggestion",
-      title: "Improvement Opportunity",
-      description: "Sundays show lower completion rates. Try planning lighter task loads or using this day for weekly reviews and planning.",
-      metric: { label: "Sunday Average", value: "78%" }
+      title: "Task Master",
+      description: `You've completed ${metrics?.totalCompletedDays || 0} days fully.`,
+      metric: { label: "Total Days", value: `${metrics?.totalCompletedDays || 0}` }
     }
   ];
 
+  // Format Calendar Data
+  const calendarData = Array.isArray(stats) ? stats.map(s => {
+    const d = new Date(s.date);
+    return {
+      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      completion: s.percentage,
+      tasksCompleted: s.tasksCompleted,
+      totalTasks: s.totalTasks
+    };
+  }) : [];
+
   const handleExport = () => {
     const dataToExport = {
-      metrics: {
-        currentStreak: 15,
-        longestStreak: 28,
-        averageCompletion: 87,
-        totalCompletedDays: 250
-      },
-      chartData: chartDataMap?.[activeView],
-      weekdayPerformance: weekdayData,
+      metrics,
+      stats,
       exportDate: new Date()?.toISOString()
     };
 
@@ -131,16 +133,12 @@ const ProgressAnalytics = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `dailyflow-analytics-${activeView}-${new Date()?.toISOString()?.split('T')?.[0]}.json`;
+    link.download = `dailyflow-analytics-${new Date()?.toISOString()?.split('T')?.[0]}.json`;
     document.body?.appendChild(link);
     link?.click();
     document.body?.removeChild(link);
     URL.revokeObjectURL(url);
   };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   return (
     <>
@@ -150,7 +148,7 @@ const ProgressAnalytics = () => {
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
-        
+
         <main className="content-container">
           <div className="page-content">
             <div className="mb-6 md:mb-8">
@@ -166,15 +164,15 @@ const ProgressAnalytics = () => {
               <MetricsCard
                 icon="Flame"
                 label="Current Streak"
-                value="15 days"
-                trend="up"
-                trendValue="+3"
+                value={`${metrics.currentStreak} days`}
+                trend="neutral"
+                trendValue="-"
                 color="var(--color-primary)"
               />
               <MetricsCard
                 icon="Trophy"
                 label="Longest Streak"
-                value="28 days"
+                value={`${metrics.longestStreak} days`}
                 trend={undefined}
                 trendValue={undefined}
                 color="var(--color-accent)"
@@ -182,17 +180,17 @@ const ProgressAnalytics = () => {
               <MetricsCard
                 icon="Target"
                 label="Average Completion"
-                value="87%"
-                trend="up"
-                trendValue="+5%"
+                value={`${metrics.averageCompletion}%`}
+                trend="neutral"
+                trendValue="-"
                 color="var(--color-success)"
               />
               <MetricsCard
                 icon="Calendar"
                 label="Completed Days"
-                value="250"
-                trend="up"
-                trendValue="+12"
+                value={`${metrics.totalCompletedDays}`}
+                trend="neutral"
+                trendValue="-"
                 color="var(--color-secondary)"
               />
             </div>
@@ -206,7 +204,7 @@ const ProgressAnalytics = () => {
                 onExport={handleExport}
               />
               <CompletionChart
-                data={chartDataMap?.[activeView]}
+                data={chartData}
                 chartType={activeChart}
                 timeView={activeView}
               />
@@ -245,5 +243,4 @@ const ProgressAnalytics = () => {
     </>
   );
 };
-
 export default ProgressAnalytics;

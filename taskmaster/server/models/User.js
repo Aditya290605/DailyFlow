@@ -20,6 +20,12 @@ const UserSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    metrics: {
+        currentStreak: { type: Number, default: 0 },
+        longestStreak: { type: Number, default: 0 },
+        totalCompletedDays: { type: Number, default: 0 },
+        lastSubmissionDate: { type: String, default: null } // YYYY-MM-DD
     }
 });
 

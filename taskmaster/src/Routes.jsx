@@ -8,6 +8,7 @@ import LandingPage from './pages/landing-page';
 import Dashboard from './pages/dashboard';
 import UserRegistration from './pages/user-registration';
 import ProgressAnalytics from './pages/progress-analytics';
+import ProfilePage from './pages/profile';
 
 const Routes = () => {
   return (
@@ -20,6 +21,7 @@ const Routes = () => {
           <Route path="/user-login" element={<UserLogin />} />
           <Route path="/landing-page" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/user-registration" element={<UserRegistration />} />
           <Route path="/progress-analytics" element={<ProgressAnalytics />} />
           <Route path="*" element={<NotFound />} />

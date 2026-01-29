@@ -1,20 +1,22 @@
 import React from 'react';
 import HeroSection from './components/HeroSection';
 import BenefitsSection from './components/BenefitsSection';
-import TestimonialsSection from './components/TestimonialsSection';
 import FeatureShowcase from './components/FeatureShowcase';
-import SocialProofSection from './components/SocialProofSection';
 import CTASection from './components/CTASection';
 import Footer from './components/Footer';
+import TipsAndTricksSection from './components/TipsAndTricksSection';
+import InspirationalQuotesSection from './components/InspirationalQuotesSection';
+import UserGuideSection from './components/UserGuideSection';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background selection:bg-primary/20">
       <HeroSection />
-      <BenefitsSection />
+      <TipsAndTricksSection />
+      <UserGuideSection />
       <FeatureShowcase />
-      <TestimonialsSection />
-      <SocialProofSection />
+      <InspirationalQuotesSection />
+      <BenefitsSection />
       <CTASection />
       <Footer />
     </div>

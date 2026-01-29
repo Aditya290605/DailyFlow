@@ -25,7 +25,8 @@ app.use('/api/data', require('./routes/data.routes'));
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod') {
     app.use(express.static(path.join(__dirname, '../build')));
 
-    app.get('*', (req, res) => {
+    // Express 5 requires specific syntax for wildcards
+    app.get(/.*/, (req, res) => {
         res.sendFile(path.resolve(__dirname, '../build/index.html'));
     });
 } else {

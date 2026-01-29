@@ -21,9 +21,18 @@ mongoose.connection.on('disconnected', () => console.log('Mongoose disconnected'
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/data', require('./routes/data.routes'));
 
-app.get('/', (req, res) => {
-    res.send('DailyFlow API is running');
-});
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod') {
+    app.use(express.static(path.join(__dirname, '../build')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../build/index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.send('DailyFlow API is running (Dev Mode)');
+    });
+}
 
 const startServer = async () => {
     try {

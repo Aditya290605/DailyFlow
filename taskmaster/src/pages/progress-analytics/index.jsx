@@ -115,8 +115,9 @@ const ProgressAnalytics = () => {
   const calendarData = Array.isArray(stats) ? stats.map(s => {
     const d = new Date(s.date);
     return {
-      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      completion: s.percentage,
+      // Use raw date for compatibility
+      date: s.date,
+      percentage: s.percentage,
       tasksCompleted: s.tasksCompleted,
       totalTasks: s.totalTasks
     };
@@ -216,7 +217,7 @@ const ProgressAnalytics = () => {
             </div>
 
             <div className="mb-6 md:mb-8">
-              <ContributionCalendar data={calendarData} />
+              <ContributionCalendar contributions={calendarData} />
             </div>
 
             <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center">

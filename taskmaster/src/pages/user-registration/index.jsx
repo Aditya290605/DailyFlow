@@ -17,7 +17,7 @@ const UserRegistration = () => {
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon name="CheckCircle2" size={24} color="var(--color-primary)" />
+              <img src="/assets/logo.png" alt="DailyFlow Logo" className="h-6 w-6 md:h-8 md:w-8 object-contain" />
             </div>
             <span className="text-xl md:text-2xl font-semibold text-foreground">
               DailyFlow
@@ -39,7 +39,7 @@ const UserRegistration = () => {
               <div className="flex flex-col justify-center">
                 <div className="w-full max-w-md mx-auto">
                   <RegistrationHeader />
-                  
+
                   <div className="bg-card border border-border rounded-2xl p-6 md:p-8 lg:p-10 shadow-lg">
                     <RegistrationForm />
                   </div>

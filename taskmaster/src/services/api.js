@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5001/api',
+    baseURL: import.meta.env.PROD ? '/api' : 'http://localhost:5002/api',
     headers: {
         'Content-Type': 'application/json'
     }
@@ -62,8 +62,13 @@ export const deleteTask = async (id) => {
     return res.data;
 };
 
-export const getStats = async () => {
-    const res = await api.get('/data/stats');
+export const submitDay = async () => {
+    const res = await api.post('/data/day-submission');
+    return res.data;
+};
+
+export const getAnalytics = async () => {
+    const res = await api.get('/data/analytics');
     return res.data;
 };
 

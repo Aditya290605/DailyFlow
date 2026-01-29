@@ -16,24 +16,30 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [contributions, setContributions] = useState([]);
   const [isDaySubmitted, setIsDaySubmitted] = useState(false);
-  const [currentStreak, setCurrentStreak] = useState(7);
-  const [longestStreak, setLongestStreak] = useState(14);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
 
   useEffect(() => {
-    // Dynamic import to avoid issues if file not fully processed by bundler yet during active dev
     const loadData = async () => {
       try {
         const api = await import('../../services/api');
         const tasksData = await api.getTasks();
         setTasks(tasksData);
 
-        const statsData = await api.getStats();
-        // Just mocking the calendar format for now based on stats
-        // Real implementation would map statsData to the calendar format
-        // For MVP, we'll keep the random logic for older data if DB is empty, 
-        // but prefer DB data. 
-        // (Simulated hybrid approach for this step to keep UI populated)
-        setContributions(generateContributions());
+        const { stats, metrics } = await api.getAnalytics();
+        setContributions(stats); // Stats are now the source of truth for contributions
+
+        setCurrentStreak(metrics?.currentStreak || 0);
+        setLongestStreak(metrics?.longestStreak || 0);
+
+        // Check if today is already submitted
+        const today = new Date();
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayStat = stats.find(s => s.date === dateString);
+        if (todayStat) {
+          setIsDaySubmitted(true);
+        }
+
       } catch (err) {
         console.error("Failed to load dashboard data", err);
       }
@@ -41,40 +47,14 @@ const Dashboard = () => {
     loadData();
   }, []);
 
-  const generateContributions = () => {
-    const contributions = [];
-    const today = new Date();
-
-    for (let i = 90; i >= 0; i--) {
-      // Create a new date object for each day to avoid mutation issues
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-
-      // Use local date string in YYYY-MM-DD format
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
-
-      const totalTasks = Math.floor(Math.random() * 8) + 3;
-      const tasksCompleted = Math.floor(Math.random() * (totalTasks + 1));
-      const percentage = Math.round((tasksCompleted / totalTasks) * 100);
-
-      contributions.push({
-        date: dateString,
-        percentage: percentage,
-        tasksCompleted: tasksCompleted,
-        totalTasks: totalTasks
-      });
-    }
-
-    return contributions;
-  };
-
   const calculateProgress = () => {
     if (tasks?.length === 0) return 0;
     const completedTasks = tasks?.filter(task => task?.completed)?.length;
     return Math.round((completedTasks / tasks?.length) * 100);
+  };
+
+  const calculateTotalCompleted = () => {
+    return tasks?.filter(task => task?.completed)?.length || 0;
   };
 
   const handleAddTask = async () => {
@@ -105,7 +85,6 @@ const Dashboard = () => {
       await updateTask(taskId, { completed: !task.completed });
     } catch (err) {
       console.error("Failed to toggle task", err);
-      // Revert on error could be implemented here
     }
   };
 
@@ -132,15 +111,19 @@ const Dashboard = () => {
     }
   };
 
-  const handleSubmitDay = () => {
-    setIsDaySubmitted(true);
-    const completionPercentage = calculateProgress();
+  const handleSubmitDay = async () => {
+    try {
+      const { submitDay } = await import('../../services/api');
+      const { metrics } = await submitDay();
 
-    if (completionPercentage >= 80) {
-      setCurrentStreak(prev => prev + 1);
-      if (currentStreak + 1 > longestStreak) {
-        setLongestStreak(currentStreak + 1);
-      }
+      setIsDaySubmitted(true);
+      setCurrentStreak(metrics.currentStreak);
+      setLongestStreak(metrics.longestStreak);
+
+      // Ideally re-fetch or optimistically add to contributions to update calendar immediately
+      // For simplicity in this step, we just update streaks and panel state
+    } catch (err) {
+      console.error("Failed to submit day", err);
     }
   };
 
@@ -157,27 +140,55 @@ const Dashboard = () => {
     day: 'numeric'
   });
 
+  // Calculate Weekly Data for Chart from Real Stats
+  const getWeeklyData = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const last7Days = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      const stat = contributions.find(c => c.date === dateString);
+      last7Days.push({
+        day: days[d.getDay()],
+        completion: stat ? stat.percentage : 0
+      });
+    }
+    return last7Days;
+  };
+
+  const weeklyData = getWeeklyData();
+
   return (
     <>
       <Header />
       <div className="content-container">
         <div className="page-content">
-          <div className="mb-6 md:mb-8 lg:mb-10">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">
-              Welcome back! 👋
-            </h1>
-            <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
-              {currentDate}
-            </p>
+          <div className="mb-6 md:mb-8 lg:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">
+                Welcome back! 👋
+              </h1>
+              <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
+                {currentDate}
+              </p>
+            </div>
+            {/* Removed Profile Section from here */}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-6 md:mb-8 lg:mb-10">
-            <div className="lg:col-span-2 space-y-4 md:space-y-6 lg:space-y-8">
-              <ProgressIndicator percentage={calculateProgress()} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Progress Indicator Row */}
+              <div>
+                <ProgressIndicator percentage={calculateProgress()} />
+              </div>
 
-              <div className="bg-card border border-border rounded-lg p-4 md:p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-4 md:mb-6">
-                  <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-foreground">
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-foreground">
                     Today's Tasks
                   </h2>
                   <div className="flex items-center gap-2">
@@ -259,5 +270,4 @@ const Dashboard = () => {
     </>
   );
 };
-
 export default Dashboard;

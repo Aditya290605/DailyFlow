@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Task = require('../models/Task');
 const DailyStat = require('../models/DailyStat');
+const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
 
@@ -108,13 +109,100 @@ router.delete('/tasks/:id', auth, async (req, res) => {
     }
 });
 
-// @route   GET /api/data/stats
-// @desc    Get user contribution stats
+// @route   POST /api/data/day-submission
+// @desc    Submit daily progress and update streaks
 // @access  Private
-router.get('/stats', auth, async (req, res) => {
+router.post('/day-submission', auth, async (req, res) => {
     try {
-        const stats = await DailyStat.find({ userId: req.user.id }).limit(90);
-        res.json(stats);
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+
+        // Check if already submitted for today
+        const existingStat = await DailyStat.findOne({ userId: req.user.id, date: dateString });
+        if (existingStat) {
+            return res.status(400).json({ msg: 'Day already submitted' });
+        }
+
+        // Calculate progress from current tasks
+        const tasks = await Task.find({ userId: req.user.id });
+        const totalTasks = tasks.length;
+        const tasksCompleted = tasks.filter(t => t.completed).length;
+        const percentage = totalTasks === 0 ? 0 : Math.round((tasksCompleted / totalTasks) * 100);
+
+        // Create DailyStat
+        const newStat = new DailyStat({
+            userId: req.user.id,
+            date: dateString,
+            tasksCompleted,
+            totalTasks,
+            percentage
+        });
+        await newStat.save();
+
+        // Update User Metrics (Streak Logic)
+        const user = await User.findById(req.user.id);
+
+        let { currentStreak, longestStreak, totalCompletedDays, lastSubmissionDate } = user.metrics || { currentStreak: 0, longestStreak: 0, totalCompletedDays: 0, lastSubmissionDate: null };
+
+        // Check difference in days to determine streak
+        if (lastSubmissionDate) {
+            const lastDate = new Date(lastSubmissionDate);
+            const diffTime = Math.abs(today - lastDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                // Consecutive day
+                currentStreak += 1;
+            } else if (diffDays > 1) {
+                // Broken streak
+                currentStreak = 1;
+            }
+            // If diffDays === 0 (same day), logic above handles "already submitted" check, 
+            // but just in case, we wouldn't increment.
+        } else {
+            // First submission ever
+            currentStreak = 1;
+        }
+
+        // Update longest streak
+        if (currentStreak > longestStreak) {
+            longestStreak = currentStreak;
+        }
+
+        totalCompletedDays += 1;
+
+        user.metrics = {
+            currentStreak,
+            longestStreak,
+            totalCompletedDays,
+            lastSubmissionDate: dateString
+        };
+
+        await user.save();
+
+        res.json({ msg: 'Day submitted successfully', stat: newStat, metrics: user.metrics });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET /api/data/analytics
+// @desc    Get user contribution stats and metrics
+// @access  Private
+router.get('/analytics', auth, async (req, res) => {
+    try {
+        const stats = await DailyStat.find({ userId: req.user.id }).sort({ date: 1 });
+        const user = await User.findById(req.user.id).select('metrics');
+
+        res.json({
+            stats,
+            metrics: user.metrics || { currentStreak: 0, longestStreak: 0, totalCompletedDays: 0 }
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

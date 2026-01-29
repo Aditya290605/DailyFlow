@@ -9,9 +9,18 @@ const ProgressIndicator = ({ percentage }) => {
   };
 
   const getProgressBg = () => {
+    // This is for the track or faint background if needed, 
+    // but we usually want solid for the fill. 
+    // Let's repurpose or add a new one.
     if (percentage >= 80) return 'bg-success/20';
     if (percentage >= 50) return 'bg-warning/20';
     return 'bg-muted';
+  };
+
+  const getProgressBarFill = () => {
+    if (percentage >= 80) return 'bg-success';
+    if (percentage >= 50) return 'bg-warning';
+    return 'bg-primary'; // Default/Low progress color
   };
 
   const getMotivationalMessage = () => {
@@ -35,7 +44,7 @@ const ProgressIndicator = ({ percentage }) => {
         <div className="relative">
           <div className="h-3 md:h-4 bg-muted rounded-full overflow-hidden">
             <div
-              className={`h-full ${getProgressBg()} transition-all duration-500`}
+              className={`h-full ${getProgressBarFill()} transition-all duration-500`}
               style={{ width: `${percentage}%` }}
             />
           </div>

@@ -16,6 +16,11 @@ const MobileNav = () => {
       label: 'Analytics',
       path: '/progress-analytics',
       icon: 'TrendingUp'
+    },
+    {
+      label: 'Profile',
+      path: '/profile',
+      icon: 'User'
     }
   ];
 
@@ -37,8 +42,8 @@ const MobileNav = () => {
             className={`mobile-nav-item ${isActive(item?.path) ? 'active' : ''}`}
             aria-current={isActive(item?.path) ? 'page' : undefined}
           >
-            <Icon 
-              name={item?.icon} 
+            <Icon
+              name={item?.icon}
               size={24}
             />
             <span className="mobile-nav-item-label">{item?.label}</span>

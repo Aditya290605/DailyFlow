@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { logout } from '../../services/api';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const Header = () => {
   };
 
   const handleLogout = () => {
+    logout(); // Clear localStorage tokens
     navigate('/user-login');
     setIsUserMenuOpen(false);
   };

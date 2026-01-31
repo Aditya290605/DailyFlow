@@ -26,7 +26,7 @@ const auth = (req, res, next) => {
 // @access  Private
 router.get('/tasks', auth, async (req, res) => {
     try {
-        const tasks = await Task.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        const tasks = await Task.find({ userId: req.user.id }).sort({ position: 1, createdAt: -1 });
         res.json(tasks);
     } catch (err) {
         console.error(err.message);
@@ -40,9 +40,14 @@ router.get('/tasks', auth, async (req, res) => {
 router.post('/tasks', auth, async (req, res) => {
     const { text } = req.body;
     try {
+        // Get the highest position and add 1
+        const highestTask = await Task.findOne({ userId: req.user.id }).sort({ position: -1 });
+        const newPosition = highestTask ? highestTask.position + 1 : 0;
+
         const newTask = new Task({
             text,
-            userId: req.user.id
+            userId: req.user.id,
+            position: newPosition
         });
         const task = await newTask.save();
         res.json(task);
@@ -80,6 +85,30 @@ router.put('/tasks/:id', auth, async (req, res) => {
         );
 
         res.json(task);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT /api/data/tasks/reorder
+// @desc    Reorder tasks (update positions)
+// @access  Private
+router.put('/tasks/reorder', auth, async (req, res) => {
+    const { tasks } = req.body; // Array of {id, position}
+
+    try {
+        // Update each task's position
+        const updatePromises = tasks.map(({ id, position }) =>
+            Task.findOneAndUpdate(
+                { _id: id, userId: req.user.id },
+                { position },
+                { new: true }
+            )
+        );
+
+        const updatedTasks = await Promise.all(updatePromises);
+        res.json(updatedTasks);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

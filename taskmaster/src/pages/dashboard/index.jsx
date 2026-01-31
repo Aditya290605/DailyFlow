@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [isDaySubmitted, setIsDaySubmitted] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dragOverTask, setDragOverTask] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -108,6 +110,62 @@ const Dashboard = () => {
       setTasks(tasks.filter(task => task._id !== taskId && task.id !== taskId));
     } catch (err) {
       console.error("Failed to delete task", err);
+    }
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e, task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTask(null);
+    setDragOverTask(null);
+  };
+
+  const handleDragOver = (e, task) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    if (draggedTask && task._id !== draggedTask._id) {
+      setDragOverTask(task);
+    }
+  };
+
+  const handleDrop = async (e, dropTask) => {
+    e.preventDefault();
+
+    if (!draggedTask || draggedTask._id === dropTask._id) return;
+
+    const draggedIndex = tasks.findIndex(t => t._id === draggedTask._id);
+    const dropIndex = tasks.findIndex(t => t._id === dropTask._id);
+
+    if (draggedIndex === -1 || dropIndex === -1) return;
+
+    // Reorder tasks locally
+    const newTasks = [...tasks];
+    const [removed] = newTasks.splice(draggedIndex, 1);
+    newTasks.splice(dropIndex, 0, removed);
+
+    // Update positions
+    const tasksWithNewPositions = newTasks.map((task, index) => ({
+      ...task,
+      position: index
+    }));
+
+    setTasks(tasksWithNewPositions);
+    setDraggedTask(null);
+    setDragOverTask(null);
+
+    // Persist to backend
+    try {
+      const { reorderTasks } = await import('../../services/api');
+      await reorderTasks(
+        tasksWithNewPositions.map(t => ({ id: t._id || t.id, position: t.position }))
+      );
+    } catch (err) {
+      console.error('Failed to reorder tasks', err);
     }
   };
 
@@ -240,6 +298,11 @@ const Dashboard = () => {
                         onToggle={handleToggleTask}
                         onEdit={handleEditTask}
                         onDelete={handleDeleteTask}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        isDragging={draggedTask?._id === task?._id}
                       />
                     ))
                   )}

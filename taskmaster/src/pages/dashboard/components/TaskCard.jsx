@@ -4,7 +4,7 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 
-const TaskCard = ({ task, onToggle, onEdit, onDelete }) => {
+const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDragEnd, onDragOver, onDrop, isDragging }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(task?.text);
 
@@ -21,8 +21,28 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 md:p-5 lg:p-6 transition-smooth hover:border-primary/30">
+    <div
+      draggable={!isEditing}
+      onDragStart={(e) => onDragStart && onDragStart(e, task)}
+      onDragEnd={(e) => onDragEnd && onDragEnd(e)}
+      onDragOver={(e) => onDragOver && onDragOver(e, task)}
+      onDrop={(e) => onDrop && onDrop(e, task)}
+      className={`
+        bg-card border border-border rounded-lg p-4 md:p-5 lg:p-6 
+        transition-all duration-200 ease-in-out
+        hover:border-primary/40 hover:shadow-md
+        ${isDragging ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}
+        ${!isEditing ? 'cursor-move' : ''}
+      `}
+    >
       <div className="flex items-start gap-3 md:gap-4">
+        {/* Drag Handle */}
+        {!isEditing && (
+          <div className="pt-1 cursor-grab active:cursor-grabbing">
+            <Icon name="GripVertical" size={18} className="text-muted-foreground" />
+          </div>
+        )}
+
         <div className="pt-1">
           <Checkbox
             checked={task?.completed}

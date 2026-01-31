@@ -62,6 +62,11 @@ export const deleteTask = async (id) => {
     return res.data;
 };
 
+export const reorderTasks = async (tasks) => {
+    const res = await api.put('/data/tasks/reorder', { tasks });
+    return res.data;
+};
+
 export const submitDay = async () => {
     const res = await api.post('/data/day-submission');
     return res.data;

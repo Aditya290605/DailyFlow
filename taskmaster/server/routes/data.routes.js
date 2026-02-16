@@ -26,6 +26,15 @@ const auth = (req, res, next) => {
 // @access  Private
 router.get('/tasks', auth, async (req, res) => {
     try {
+        // Daily reset: uncheck tasks completed on a previous day
+        const today = new Date();
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        await Task.updateMany(
+            { userId: req.user.id, completed: true, lastCompletedDate: { $ne: dateString } },
+            { $set: { completed: false, lastCompletedDate: null } }
+        );
+
         const tasks = await Task.find({ userId: req.user.id }).sort({ position: 1, createdAt: -1 });
         res.json(tasks);
     } catch (err) {
@@ -66,7 +75,15 @@ router.put('/tasks/:id', auth, async (req, res) => {
     // Build object to update
     const taskFields = {};
     if (text !== undefined) taskFields.text = text;
-    if (completed !== undefined) taskFields.completed = completed;
+    if (completed !== undefined) {
+        taskFields.completed = completed;
+        if (completed) {
+            const today = new Date();
+            taskFields.lastCompletedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        } else {
+            taskFields.lastCompletedDate = null;
+        }
+    }
 
     try {
         let task = await Task.findById(req.params.id);
@@ -171,45 +188,55 @@ router.post('/day-submission', auth, async (req, res) => {
         });
         await newStat.save();
 
-        // Update User Metrics (Streak Logic)
-        const user = await User.findById(req.user.id);
+        // Compute streaks from DailyStat records (reliable, timezone-safe)
+        const allStats = await DailyStat.find({ userId: req.user.id }).sort({ date: -1 });
+        const submittedDates = new Set(allStats.map(s => s.date));
 
-        let { currentStreak, longestStreak, totalCompletedDays, lastSubmissionDate } = user.metrics || { currentStreak: 0, longestStreak: 0, totalCompletedDays: 0, lastSubmissionDate: null };
-
-        // Check difference in days to determine streak
-        if (lastSubmissionDate) {
-            const lastDate = new Date(lastSubmissionDate);
-            const diffTime = Math.abs(today - lastDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 1) {
-                // Consecutive day
-                currentStreak += 1;
-            } else if (diffDays > 1) {
-                // Broken streak
-                currentStreak = 1;
+        // Current streak: walk backwards from today
+        let currentStreak = 0;
+        let checkDate = new Date(today);
+        while (true) {
+            const y = checkDate.getFullYear();
+            const m = String(checkDate.getMonth() + 1).padStart(2, '0');
+            const d = String(checkDate.getDate()).padStart(2, '0');
+            if (submittedDates.has(`${y}-${m}-${d}`)) {
+                currentStreak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
             }
-            // If diffDays === 0 (same day), logic above handles "already submitted" check, 
-            // but just in case, we wouldn't increment.
-        } else {
-            // First submission ever
-            currentStreak = 1;
         }
 
-        // Update longest streak
-        if (currentStreak > longestStreak) {
-            longestStreak = currentStreak;
+        // Longest streak: walk through all dates chronologically
+        let longestStreak = 0;
+        let tempStreak = 0;
+        const sortedDates = [...submittedDates].sort();
+        for (let i = 0; i < sortedDates.length; i++) {
+            if (i === 0) {
+                tempStreak = 1;
+            } else {
+                const prev = new Date(sortedDates[i - 1] + 'T00:00:00');
+                const curr = new Date(sortedDates[i] + 'T00:00:00');
+                const diffMs = curr - prev;
+                const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    tempStreak++;
+                } else {
+                    tempStreak = 1;
+                }
+            }
+            longestStreak = Math.max(longestStreak, tempStreak);
         }
 
-        totalCompletedDays += 1;
+        const totalCompletedDays = allStats.length;
 
+        const user = await User.findById(req.user.id);
         user.metrics = {
             currentStreak,
             longestStreak,
             totalCompletedDays,
             lastSubmissionDate: dateString
         };
-
         await user.save();
 
         res.json({ msg: 'Day submitted successfully', stat: newStat, metrics: user.metrics });
@@ -226,11 +253,52 @@ router.post('/day-submission', auth, async (req, res) => {
 router.get('/analytics', auth, async (req, res) => {
     try {
         const stats = await DailyStat.find({ userId: req.user.id }).sort({ date: 1 });
-        const user = await User.findById(req.user.id).select('metrics');
+
+        // Compute streaks from DailyStat records (source of truth)
+        const submittedDates = new Set(stats.map(s => s.date));
+
+        // Current streak: walk backwards from today
+        let currentStreak = 0;
+        const today = new Date();
+        let checkDate = new Date(today);
+        while (true) {
+            const y = checkDate.getFullYear();
+            const m = String(checkDate.getMonth() + 1).padStart(2, '0');
+            const d = String(checkDate.getDate()).padStart(2, '0');
+            if (submittedDates.has(`${y}-${m}-${d}`)) {
+                currentStreak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+
+        // Longest streak: walk through all dates chronologically
+        let longestStreak = 0;
+        let tempStreak = 0;
+        const sortedDates = [...submittedDates].sort();
+        for (let i = 0; i < sortedDates.length; i++) {
+            if (i === 0) {
+                tempStreak = 1;
+            } else {
+                const prev = new Date(sortedDates[i - 1] + 'T00:00:00');
+                const curr = new Date(sortedDates[i] + 'T00:00:00');
+                const diffMs = curr - prev;
+                const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    tempStreak++;
+                } else {
+                    tempStreak = 1;
+                }
+            }
+            longestStreak = Math.max(longestStreak, tempStreak);
+        }
+
+        const totalCompletedDays = stats.length;
 
         res.json({
             stats,
-            metrics: user.metrics || { currentStreak: 0, longestStreak: 0, totalCompletedDays: 0 }
+            metrics: { currentStreak, longestStreak, totalCompletedDays }
         });
     } catch (err) {
         console.error(err.message);

@@ -14,6 +14,10 @@ const TaskSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    lastCompletedDate: {
+        type: String,
+        default: null
+    },
     position: {
         type: Number,
         default: 0

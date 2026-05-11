@@ -1,27 +1,23 @@
 const mongoose = require('mongoose');
 
-const TaskSchema = new mongoose.Schema({
+const BucketSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    bucketId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bucket',
-        default: null
-    },
-    text: {
+    name: {
         type: String,
-        required: true
-    },
-    completed: {
-        type: Boolean,
-        default: false
+        required: true,
+        trim: true
     },
     position: {
         type: Number,
         default: 0
+    },
+    color: {
+        type: String,
+        default: null // Optional accent color hex
     },
     createdAt: {
         type: Date,
@@ -29,4 +25,6 @@ const TaskSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Task', TaskSchema);
+BucketSchema.index({ userId: 1, position: 1 });
+
+module.exports = mongoose.model('Bucket', BucketSchema);

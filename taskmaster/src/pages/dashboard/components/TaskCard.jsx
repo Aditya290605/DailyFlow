@@ -1,115 +1,135 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
-import { Checkbox } from '../../../components/ui/Checkbox';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
 
-const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDragEnd, onDragOver, onDrop, isDragging }) => {
+const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDrop, isDragging }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(task?.text);
+  const [editedText, setEditedText] = useState(task?.text || '');
+  const [showActions, setShowActions] = useState(false);
+
+  const taskId = task?._id || task?.id;
 
   const handleSave = () => {
-    if (editedText?.trim()) {
-      onEdit(task?.id, editedText?.trim());
-      setIsEditing(false);
+    if (editedText.trim() && editedText.trim() !== task.text) {
+      onEdit(taskId, editedText.trim());
     }
+    setIsEditing(false);
   };
 
-  const handleCancel = () => {
-    setEditedText(task?.text);
-    setIsEditing(false);
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
   };
 
   return (
     <div
       draggable={!isEditing}
       onDragStart={(e) => onDragStart && onDragStart(e, task)}
-      onDragEnd={(e) => onDragEnd && onDragEnd(e)}
-      onDragOver={(e) => onDragOver && onDragOver(e, task)}
+      onDragOver={handleDragOver}
       onDrop={(e) => onDrop && onDrop(e, task)}
-      className={`
-        bg-card border border-border rounded-lg p-4 md:p-5 lg:p-6 
-        transition-all duration-200 ease-in-out
-        hover:border-primary/40 hover:shadow-md
-        ${isDragging ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}
-        ${!isEditing ? 'cursor-move' : ''}
-      `}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+      className="relative group rounded-lg transition-all duration-150"
+      style={{
+        background: isDragging ? 'rgba(124, 58, 237, 0.15)' : 'rgba(30, 35, 55, 0.9)',
+        border: isDragging
+          ? '1.5px solid rgba(124, 58, 237, 0.5)'
+          : '1.5px solid rgba(255,255,255,0.06)',
+        boxShadow: isDragging
+          ? '0 8px 32px rgba(124,58,237,0.2)'
+          : '0 2px 8px rgba(0,0,0,0.2)',
+        opacity: isDragging ? 0.7 : 1,
+        cursor: isEditing ? 'default' : 'grab',
+        transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+      }}
     >
-      <div className="flex items-start gap-3 md:gap-4">
-        {/* Drag Handle */}
-        {!isEditing && (
-          <div className="pt-1 cursor-grab active:cursor-grabbing">
-            <Icon name="GripVertical" size={18} className="text-muted-foreground" />
-          </div>
-        )}
+      {/* Completed indicator bar */}
+      {task?.completed && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg"
+          style={{ background: 'linear-gradient(180deg, #34d399, #059669)' }}
+        />
+      )}
 
-        <div className="pt-1">
-          <Checkbox
-            checked={task?.completed}
-            onChange={() => onToggle(task?._id || task?.id)}
-            size="lg"
-          />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {isEditing ? (
-            <div className="space-y-3">
-              <Input
-                type="text"
-                value={editedText}
-                onChange={(e) => setEditedText(e?.target?.value)}
-                placeholder="Enter task description"
-                className="w-full"
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => {
-                    if (editedText?.trim()) {
-                      onEdit(task?._id || task?.id, editedText?.trim());
-                      setIsEditing(false);
-                    }
-                  }}
-                  iconName="Check"
-                  iconPosition="left"
-                >
-                  Save
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancel}
-                  iconName="X"
-                  iconPosition="left"
-                >
-                  Cancel
-                </Button>
-              </div>
+      <div className="p-3">
+        {isEditing ? (
+          <div className="space-y-2">
+            <textarea
+              autoFocus
+              rows={2}
+              className="w-full bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-400 resize-none transition-colors"
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); }
+                if (e.key === 'Escape') { setEditedText(task.text); setIsEditing(false); }
+              }}
+            />
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleSave}
+                className="px-2.5 py-1 rounded-md text-xs font-medium transition-all"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white' }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => { setEditedText(task.text); setIsEditing(false); }}
+                className="px-2.5 py-1 rounded-md text-xs font-medium text-white/50 hover:text-white hover:bg-white/10 transition-all"
+              >
+                Cancel
+              </button>
             </div>
-          ) : (
-            <p className={`text-sm md:text-base lg:text-lg ${task?.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+          </div>
+        ) : (
+          <div className="flex items-start gap-2.5">
+            {/* Checkbox */}
+            <button
+              onClick={() => onToggle(taskId)}
+              className="flex-shrink-0 mt-0.5 w-4 h-4 rounded border transition-all duration-200"
+              style={{
+                background: task?.completed ? 'linear-gradient(135deg, #34d399, #059669)' : 'transparent',
+                border: task?.completed ? 'none' : '1.5px solid rgba(255,255,255,0.2)',
+                boxShadow: task?.completed ? '0 0 8px rgba(52,211,153,0.3)' : 'none',
+              }}
+            >
+              {task?.completed && (
+                <svg viewBox="0 0 12 12" fill="none" className="w-full h-full p-0.5">
+                  <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+
+            {/* Text */}
+            <p
+              className="flex-1 text-sm leading-relaxed"
+              style={{
+                color: task?.completed ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.85)',
+                textDecoration: task?.completed ? 'line-through' : 'none',
+              }}
+            >
               {task?.text}
             </p>
-          )}
-        </div>
 
-        {!isEditing && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 rounded-lg hover:bg-muted transition-smooth"
-              aria-label="Edit task"
+            {/* Actions (shown on hover) */}
+            <div
+              className="flex-shrink-0 flex items-center gap-0.5 transition-all duration-150"
+              style={{ opacity: showActions ? 1 : 0 }}
             >
-              <Icon name="Pencil" size={18} className="text-muted-foreground" />
-            </button>
-            <button
-              onClick={() => onDelete(task?._id || task?.id)}
-              className="p-2 rounded-lg hover:bg-destructive/10 transition-smooth"
-              aria-label="Delete task"
-            >
-              <Icon name="Trash2" size={18} className="text-destructive" />
-            </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-1 rounded-md text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
+                title="Edit"
+              >
+                <Icon name="Pencil" size={12} />
+              </button>
+              <button
+                onClick={() => onDelete(taskId)}
+                className="p-1 rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                title="Delete"
+              >
+                <Icon name="Trash2" size={12} />
+              </button>
+            </div>
           </div>
         )}
       </div>

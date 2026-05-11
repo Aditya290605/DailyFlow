@@ -19,6 +19,8 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
 export const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data.token) {
@@ -42,18 +44,47 @@ export const logout = () => {
     localStorage.removeItem('user');
 };
 
+// ─── Buckets ──────────────────────────────────────────────────────────────────
+
+export const getBuckets = async () => {
+    const res = await api.get('/data/buckets');
+    return res.data;
+};
+
+export const createBucket = async (name, color) => {
+    const res = await api.post('/data/buckets', { name, color });
+    return res.data;
+};
+
+export const updateBucket = async (id, updates) => {
+    const res = await api.put(`/data/buckets/${id}`, updates);
+    return res.data;
+};
+
+export const deleteBucket = async (id) => {
+    const res = await api.delete(`/data/buckets/${id}`);
+    return res.data;
+};
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+
 export const getTasks = async () => {
     const res = await api.get('/data/tasks');
     return res.data;
 };
 
-export const addTask = async (text) => {
-    const res = await api.post('/data/tasks', { text });
+export const addTask = async (text, bucketId) => {
+    const res = await api.post('/data/tasks', { text, bucketId });
     return res.data;
 };
 
 export const updateTask = async (id, updates) => {
     const res = await api.put(`/data/tasks/${id}`, updates);
+    return res.data;
+};
+
+export const moveTask = async (id, targetBucketId, position) => {
+    const res = await api.put(`/data/tasks/${id}/move`, { targetBucketId, position });
     return res.data;
 };
 
@@ -67,10 +98,7 @@ export const reorderTasks = async (tasks) => {
     return res.data;
 };
 
-export const submitDay = async () => {
-    const res = await api.post('/data/day-submission');
-    return res.data;
-};
+// ─── Analytics ────────────────────────────────────────────────────────────────
 
 export const getAnalytics = async () => {
     const res = await api.get('/data/analytics');

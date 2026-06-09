@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../components/AppIcon';
+import Header from '../../components/ui/Header';
 import MobileNav from '../../components/ui/MobileNav';
 import BoardHeader from './components/BoardHeader';
 import BucketColumn from './components/BucketColumn';
@@ -341,6 +342,9 @@ const Dashboard = () => {
         backgroundAttachment: 'fixed',
       }}
     >
+      {/* Global Navigation Bar */}
+      <Header />
+
       {/* Ambient blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
         <div
@@ -357,8 +361,8 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Board Header */}
-      <div className="relative z-10">
+      {/* Board Header (board name + streak info) */}
+      <div className="relative z-10" style={{ marginTop: '64px' }}>
         <BoardHeader
           boardName="Daily Tasks"
           currentStreak={currentStreak}
@@ -374,7 +378,7 @@ const Dashboard = () => {
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: 'rgba(255,255,255,0.1) transparent',
-          minHeight: 'calc(100vh - 60px)',
+          minHeight: 'calc(100vh - 124px)',
           paddingBottom: '80px', // room for MobileNav
         }}
         onDragEnd={handleDragEndTask}

@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+
 const serverless = require('serverless-http');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -19,8 +22,12 @@ const connectDb = async () => {
   if (cachedDb && mongoose.connection.readyState === 1) {
     return cachedDb;
   }
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is missing. Please set it in the Netlify Dashboard (Site configuration -> Environment variables) and trigger a new deploy.');
+  }
   console.log('Connecting to MongoDB Atlas (Serverless)...');
-  cachedDb = await mongoose.connect(process.env.MONGODB_URI, {
+  cachedDb = await mongoose.connect(uri, {
     serverSelectionTimeoutMS: 5000,
   });
   return cachedDb;

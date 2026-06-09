@@ -8,17 +8,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: 'var(--color-border)', // slate-700
-        input: 'var(--color-input)', // slate-700
+        border: 'var(--color-border)', // neutral gray
+        input: 'var(--color-input)', // neutral gray
         ring: 'var(--color-ring)', // emerald-500
-        background: 'var(--color-background)', // slate-900
-        foreground: 'var(--color-foreground)', // slate-100
+        background: 'var(--color-background)', // neutral charcoal
+        foreground: 'var(--color-foreground)', // cool white
         primary: {
           DEFAULT: 'var(--color-primary)', // emerald-500
           foreground: 'var(--color-primary-foreground)', // white
         },
         secondary: {
-          DEFAULT: 'var(--color-secondary)', // indigo-500
+          DEFAULT: 'var(--color-secondary)', // blue-500
           foreground: 'var(--color-secondary-foreground)', // white
         },
         accent: {
@@ -81,7 +81,7 @@ module.exports = {
       },
       boxShadow: {
         'glow-sm': '0 0 8px rgba(16, 185, 129, 0.15)',
-        'glow-md': '0 0 12px rgba(99, 102, 241, 0.2)',
+        'glow-md': '0 0 12px rgba(59, 130, 246, 0.2)',
         'glow-lg': '0 0 24px rgba(245, 158, 11, 0.25)',
       },
     },

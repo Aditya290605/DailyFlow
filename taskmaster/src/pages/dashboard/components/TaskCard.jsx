@@ -30,12 +30,12 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDrop, isDra
       onMouseLeave={() => setShowActions(false)}
       className="relative group rounded-lg transition-all duration-150"
       style={{
-        background: isDragging ? 'rgba(124, 58, 237, 0.15)' : 'rgba(30, 35, 55, 0.9)',
+        background: isDragging ? 'rgba(16, 185, 129, 0.15)' : 'rgba(30, 35, 55, 0.9)',
         border: isDragging
-          ? '1.5px solid rgba(124, 58, 237, 0.5)'
+          ? '1.5px solid rgba(16, 185, 129, 0.5)'
           : '1.5px solid rgba(255,255,255,0.06)',
         boxShadow: isDragging
-          ? '0 8px 32px rgba(124,58,237,0.2)'
+          ? '0 8px 32px rgba(16,185,129,0.2)'
           : '0 2px 8px rgba(0,0,0,0.2)',
         opacity: isDragging ? 0.7 : 1,
         cursor: isEditing ? 'default' : 'grab',
@@ -56,7 +56,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDrop, isDra
             <textarea
               autoFocus
               rows={2}
-              className="w-full bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-400 resize-none transition-colors"
+              className="w-full bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-sm text-white placeholder-white/30 outline-none focus:border-emerald-400 resize-none transition-colors"
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
               onKeyDown={(e) => {
@@ -68,7 +68,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, onDragStart, onDrop, isDra
               <button
                 onClick={handleSave}
                 className="px-2.5 py-1 rounded-md text-xs font-medium transition-all"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white' }}
+                style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: 'white' }}
               >
                 Save
               </button>

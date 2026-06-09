@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import MobileNav from '../../components/ui/MobileNav';
@@ -8,8 +9,10 @@ import CompletionChart from './components/CompletionChart';
 import ContributionCalendar from './components/ContributionCalendar';
 import InsightsPanel from './components/InsightsPanel';
 import WeekdayPerformance from './components/WeekdayPerformance';
+import Icon from '../../components/AppIcon';
 
 const ProgressAnalytics = () => {
+  const navigate = useNavigate();
   const [activeView, setActiveView] = useState('month');
   const [activeChart, setActiveChart] = useState('bar');
   const [stats, setStats] = useState([]);
@@ -152,6 +155,15 @@ const ProgressAnalytics = () => {
 
         <main className="content-container">
           <div className="page-content">
+            {/* Back button */}
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+            >
+              <Icon name="ArrowLeft" size={16} />
+              Back to Dashboard
+            </button>
+
             <div className="mb-6 md:mb-8">
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">
                 Progress Analytics

@@ -3,7 +3,7 @@ import Icon from '../../../components/AppIcon';
 import TaskCard from './TaskCard';
 
 const COLUMN_COLORS = [
-  '#7c3aed', '#2563eb', '#0891b2', '#059669', '#d97706', '#dc2626', '#db2777', '#9333ea'
+  '#10B981', '#3B82F6', '#0891b2', '#059669', '#d97706', '#dc2626', '#db2777', '#8B5CF6'
 ];
 
 const BucketColumn = ({
@@ -75,10 +75,10 @@ const BucketColumn = ({
         width: '280px',
         background: 'rgba(22, 27, 45, 0.85)',
         border: isDragOver
-          ? '1.5px solid rgba(124, 58, 237, 0.6)'
+          ? '1.5px solid rgba(16, 185, 129, 0.6)'
           : '1.5px solid rgba(255,255,255,0.07)',
         boxShadow: isDragOver
-          ? '0 0 20px rgba(124, 58, 237, 0.15)'
+          ? '0 0 20px rgba(16, 185, 129, 0.15)'
           : '0 4px 24px rgba(0,0,0,0.25)',
         transition: 'border-color 0.15s, box-shadow 0.15s',
         maxHeight: 'calc(100vh - 140px)',
@@ -93,13 +93,13 @@ const BucketColumn = ({
           {/* Color dot */}
           <div
             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: bucket.color || '#7c3aed' }}
+            style={{ backgroundColor: bucket.color || '#10B981' }}
           />
 
           {isEditingName ? (
             <input
               autoFocus
-              className="flex-1 text-sm font-semibold text-white bg-white/10 border border-white/20 rounded px-2 py-0.5 outline-none focus:border-violet-400"
+              className="flex-1 text-sm font-semibold text-white bg-white/10 border border-white/20 rounded px-2 py-0.5 outline-none focus:border-emerald-400"
               value={bucketName}
               onChange={(e) => setBucketName(e.target.value)}
               onBlur={handleRenameBlur}
@@ -191,7 +191,7 @@ const BucketColumn = ({
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${Math.round((completedCount / tasks.length) * 100)}%`,
-                background: 'linear-gradient(90deg, #7c3aed, #2563eb)'
+                background: 'linear-gradient(90deg, #10B981, #059669)'
               }}
             />
           </div>
@@ -221,7 +221,7 @@ const BucketColumn = ({
         {isDragOver && tasks.length === 0 && (
           <div
             className="h-16 rounded-lg"
-            style={{ border: '1.5px dashed rgba(124,58,237,0.5)', background: 'rgba(124,58,237,0.05)' }}
+            style={{ border: '1.5px dashed rgba(16,185,129,0.5)', background: 'rgba(16,185,129,0.05)' }}
           />
         )}
 
@@ -264,7 +264,7 @@ const BucketColumn = ({
                 onClick={handleAddTask}
                 disabled={!newTaskText.trim()}
                 className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white' }}
+                style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: 'white' }}
               >
                 Add card
               </button>

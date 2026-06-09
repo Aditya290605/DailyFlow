@@ -3,8 +3,6 @@ import Icon from '../../components/AppIcon';
 import MobileNav from '../../components/ui/MobileNav';
 import BoardHeader from './components/BoardHeader';
 import BucketColumn from './components/BucketColumn';
-import ContributionCalendar from './components/ContributionCalendar';
-import StreakCounter from './components/StreakCounter';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -30,7 +28,6 @@ const Dashboard = () => {
   const [contributions, setContributions] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
-  const [showAnalytics, setShowAnalytics] = useState(false);
   const [isAddingBucket, setIsAddingBucket] = useState(false);
   const [newBucketName, setNewBucketName] = useState('');
   const [draggingTask, setDraggingTask] = useState(null);
@@ -324,11 +321,11 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0b0d1a' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#111318' }}>
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-10 h-10 rounded-full border-2 border-transparent animate-spin"
-            style={{ borderTopColor: '#7c3aed', borderRightColor: '#2563eb' }}
+            style={{ borderTopColor: '#10B981', borderRightColor: '#3B82F6' }}
           />
           <p className="text-white/40 text-sm">Loading your board...</p>
         </div>
@@ -340,22 +337,22 @@ const Dashboard = () => {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background: 'linear-gradient(135deg, #0b0d1a 0%, #0f1128 40%, #0d1020 100%)',
+        background: 'linear-gradient(135deg, #111318 0%, #14171f 40%, #111318 100%)',
         backgroundAttachment: 'fixed',
       }}
     >
       {/* Ambient blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
         <div
-          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] opacity-20"
-          style={{ background: 'radial-gradient(circle, #7c3aed, transparent)' }}
+          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] opacity-15"
+          style={{ background: 'radial-gradient(circle, #10B981, transparent)' }}
         />
         <div
-          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[100px] opacity-15"
-          style={{ background: 'radial-gradient(circle, #2563eb, transparent)' }}
+          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[100px] opacity-10"
+          style={{ background: 'radial-gradient(circle, #3B82F6, transparent)' }}
         />
         <div
-          className="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full blur-[80px] opacity-10"
+          className="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full blur-[80px] opacity-8"
           style={{ background: 'radial-gradient(circle, #0891b2, transparent)' }}
         />
       </div>
@@ -367,72 +364,8 @@ const Dashboard = () => {
           currentStreak={currentStreak}
           longestStreak={longestStreak}
           totalCompleted={totalCompleted}
-          onShowAnalytics={() => setShowAnalytics(p => !p)}
-          showAnalytics={showAnalytics}
         />
       </div>
-
-      {/* Analytics panel (collapsible) */}
-      {showAnalytics && (
-        <div
-          className="relative z-10 border-b border-white/5"
-          style={{ background: 'rgba(10, 12, 25, 0.9)' }}
-        >
-          <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Streak mini cards */}
-            <div
-              className="col-span-1 rounded-xl p-4 flex items-center gap-4"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(251, 146, 60, 0.15)' }}
-              >
-                <Icon name="Flame" size={24} color="#fb923c" />
-              </div>
-              <div>
-                <p className="text-xs text-white/40">Current Streak</p>
-                <p className="text-2xl font-bold text-white">{currentStreak} <span className="text-sm text-white/40 font-normal">days</span></p>
-              </div>
-            </div>
-            <div
-              className="col-span-1 rounded-xl p-4 flex items-center gap-4"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(124, 58, 237, 0.15)' }}
-              >
-                <Icon name="Trophy" size={24} color="#a78bfa" />
-              </div>
-              <div>
-                <p className="text-xs text-white/40">Longest Streak</p>
-                <p className="text-2xl font-bold text-white">{longestStreak} <span className="text-sm text-white/40 font-normal">days</span></p>
-              </div>
-            </div>
-            <div
-              className="col-span-1 rounded-xl p-4 flex items-center gap-4"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(52, 211, 153, 0.15)' }}
-              >
-                <Icon name="CheckCircle2" size={24} color="#34d399" />
-              </div>
-              <div>
-                <p className="text-xs text-white/40">Tasks Completed</p>
-                <p className="text-2xl font-bold text-white">{totalCompleted} <span className="text-sm text-white/40 font-normal">/ {totalTasks}</span></p>
-              </div>
-            </div>
-
-            {/* Heatmap */}
-            <div className="col-span-1 md:col-span-3">
-              <ContributionCalendar contributions={contributions} />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Board */}
       <div
@@ -478,7 +411,7 @@ const Dashboard = () => {
             >
               <input
                 autoFocus
-                className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-violet-400 transition-colors"
+                className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-emerald-400 transition-colors"
                 placeholder="Enter list name..."
                 value={newBucketName}
                 onChange={(e) => setNewBucketName(e.target.value)}
@@ -492,7 +425,7 @@ const Dashboard = () => {
                   onClick={handleAddBucket}
                   disabled={!newBucketName.trim()}
                   className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
-                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white' }}
+                  style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: 'white' }}
                 >
                   Add list
                 </button>
@@ -514,8 +447,8 @@ const Dashboard = () => {
                 color: 'rgba(255,255,255,0.5)',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(124,58,237,0.1)';
-                e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)';
+                e.currentTarget.style.background = 'rgba(16,185,129,0.1)';
+                e.currentTarget.style.borderColor = 'rgba(16,185,129,0.4)';
                 e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
               }}
               onMouseLeave={e => {

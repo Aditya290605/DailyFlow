@@ -14,7 +14,7 @@
     --color-primary-foreground: #FFFFFF; /* white */
     
     /* Secondary Colors */
-    --color-secondary: #6366F1; /* indigo-500 */
+    --color-secondary: #3B82F6; /* blue-500 */
     --color-secondary-foreground: #FFFFFF; /* white */
     
     /* Accent Colors */
@@ -22,23 +22,23 @@
     --color-accent-foreground: #000000; /* black */
     
     /* Background Colors */
-    --color-background: #0F172A; /* slate-900 */
-    --color-foreground: #F1F5F9; /* slate-100 */
+    --color-background: #111318; /* neutral charcoal */
+    --color-foreground: #EAEDF3; /* cool white */
     
     /* Surface Colors */
-    --color-card: #1E293B; /* slate-800 */
-    --color-card-foreground: #F1F5F9; /* slate-100 */
+    --color-card: #1A1D27; /* neutral dark surface */
+    --color-card-foreground: #EAEDF3; /* cool white */
     
-    --color-popover: #1E293B; /* slate-800 */
-    --color-popover-foreground: #F1F5F9; /* slate-100 */
+    --color-popover: #1A1D27; /* neutral dark surface */
+    --color-popover-foreground: #EAEDF3; /* cool white */
     
     /* Muted Colors */
-    --color-muted: #334155; /* slate-700 */
-    --color-muted-foreground: #94A3B8; /* slate-400 */
+    --color-muted: #2A2D38; /* neutral gray */
+    --color-muted-foreground: #8B91A0; /* medium gray */
     
     /* Border & Input */
-    --color-border: #334155; /* slate-700 */
-    --color-input: #334155; /* slate-700 */
+    --color-border: #2A2D38; /* neutral gray */
+    --color-input: #2A2D38; /* neutral gray */
     --color-ring: #10B981; /* emerald-500 */
     
     /* Status Colors */
@@ -62,16 +62,16 @@
   }
 
   .dark {
-    --color-background: #0F172A; /* slate-900 */
-    --color-foreground: #F1F5F9; /* slate-100 */
-    --color-card: #1E293B; /* slate-800 */
-    --color-card-foreground: #F1F5F9; /* slate-100 */
-    --color-popover: #1E293B; /* slate-800 */
-    --color-popover-foreground: #F1F5F9; /* slate-100 */
-    --color-muted: #334155; /* slate-700 */
-    --color-muted-foreground: #94A3B8; /* slate-400 */
-    --color-border: #334155; /* slate-700 */
-    --color-input: #334155; /* slate-700 */
+    --color-background: #111318; /* neutral charcoal */
+    --color-foreground: #EAEDF3; /* cool white */
+    --color-card: #1A1D27; /* neutral dark surface */
+    --color-card-foreground: #EAEDF3; /* cool white */
+    --color-popover: #1A1D27; /* neutral dark surface */
+    --color-popover-foreground: #EAEDF3; /* cool white */
+    --color-muted: #2A2D38; /* neutral gray */
+    --color-muted-foreground: #8B91A0; /* medium gray */
+    --color-border: #2A2D38; /* neutral gray */
+    --color-input: #2A2D38; /* neutral gray */
   }
 
   * {
@@ -227,7 +227,7 @@
   }
 
   .user-menu-trigger:hover {
-    box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
   }
 .user-menu-avatar  {
     @apply w-8 h-8 rounded-full flex items-center justify-center text-primary font-semibold;
@@ -236,7 +236,7 @@
 
   .user-menu-dropdown {
     @apply absolute right-0 mt-2 w-56 bg-popover border border-border rounded-lg shadow-lg;
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     z-index: 200;
   }
 
@@ -283,7 +283,7 @@
   }
 
   .glow-secondary {
-    box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.15);
   }
 
   .glow-accent {
